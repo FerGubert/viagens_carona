@@ -2,12 +2,15 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-//import java.security.PrivateKey;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.util.Scanner;
 
 public class Cliente{
@@ -19,6 +22,14 @@ public class Cliente{
         CliImpl referenciaCliente = new CliImpl(referenciaServidor);
         Usuario usuario = new Usuario();
 
+        KeyPairGenerator kpg = KeyPairGenerator.getInstance("DSA");
+        SecureRandom secRan = new SecureRandom();
+        kpg.initialize(512, secRan);
+        KeyPair keyP = kpg.generateKeyPair();
+        PublicKey pubKey = keyP.getPublic();
+        PrivateKey priKey = keyP.getPrivate();
+        byte[] assinatura;
+
         Scanner input = new Scanner(System.in);
         int op = -1;
         while(op != 0){
@@ -26,16 +37,8 @@ public class Cliente{
         
             if(op == 1){
                 pedirDadosUsuario(input, usuario);
-                
-                //Geração das chaves públicas e privadas
-                KeyPairGenerator kpg = KeyPairGenerator.getInstance("DSA");
-                SecureRandom secRan = new SecureRandom();
-                kpg.initialize(512, secRan);
-                KeyPair keyP = kpg.generateKeyPair();
-                PublicKey pubKey = keyP.getPublic();
-                //PrivateKey priKey = keyP.getPrivate();
-
                 usuario.setchavePublica(pubKey);
+
                 String retorno = referenciaServidor.cadastrarUsuario(usuario);
                 System.out.println(retorno);
 
@@ -43,11 +46,15 @@ public class Cliente{
                 Carona carona = new Carona();
                 pedirDadosCarona(input, carona);
                 carona.setReferenciaCliente(referenciaCliente);
-                int retorno = referenciaServidor.registrarInteresse(usuario, carona);
+
+                String msg = criarMensagem(carona);
+				assinatura = assinarMensagem(priKey, msg);
+
+                int retorno = referenciaServidor.registrarInteresse(carona, assinatura);
                 if(retorno == 0)
                     System.out.println("Erro ao registrar interesse.");
                 else
-                    System.out.println("Registro de interesse realizado com sucesso.");
+                    System.out.println("Registro de interesse realizado com sucesso. Caso queira cancelar seu ID e " + retorno + ".");
             
             }else if(op != 0)
                 System.out.println("Opcao invalida.");
@@ -82,6 +89,9 @@ public class Cliente{
     public static void pedirDadosCarona(Scanner input, Carona carona){
         System.out.println("REGISTRO DE INTERESSE");
 		
+        System.out.println("Nome:");
+		carona.setNome(input.next());
+
 		System.out.println("Origem:");
 		carona.setOrigem(input.next());
 		
@@ -100,4 +110,24 @@ public class Cliente{
 		    carona.setNumPassageiros(Integer.parseInt(input.next()));
         }
 	}
+
+    public static String criarMensagem(Carona carona){
+    	String msg = carona.getNome() + " " + carona.getOrigem() + " " + carona.getDestino() + " " + carona.getData();
+    	return msg;
+    }
+    
+    public static byte[] assinarMensagem(PrivateKey priKey, String msg){
+    	byte[] assinatura = null;
+        try{
+    		Signature sign;
+			sign = Signature.getInstance("DSA");
+			sign.initSign(priKey);
+			sign.update(msg.getBytes());
+			assinatura = sign.sign();
+		} catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
+			e.printStackTrace();
+            return null;
+		}
+		return assinatura;
+    }
 }

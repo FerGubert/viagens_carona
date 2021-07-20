@@ -1,7 +1,11 @@
 import java.rmi.*;
 import java.rmi.server.UnicastRemoteObject;
-import java.security.PublicKey;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
 
@@ -17,7 +21,6 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
 
     public String cadastrarUsuario(Usuario usuario) throws RemoteException{
         
-        int proxId;
         if(usuarios.size() > 0){
             // verifica se o usuário já possui cadastro e, se sim, atualiza o cadastro já existente
             for(Usuario usu : usuarios){
@@ -27,13 +30,9 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
                     return "Usuario atualizado pois ja estava cadastrado.";
                 }
             }
-            // se for usuário novo especifica o id, que é sempre o incremento em 1 do último cadastrado
-            proxId = usuarios.get(usuarios.size() - 1).getId() + 1;
-        }else
-            proxId = 1;
+        }
 
         // cadastra novo usuário
-        usuario.setId(proxId);
         boolean cadastro = usuarios.add(usuario);
         if(cadastro)
             return "Cadastro realizado com sucesso.";
@@ -50,40 +49,58 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
         return "Existem " + caronasDisponiveis + " disponiveis.";
     }
 
-    public int registrarInteresse(Usuario usuario, Carona carona) throws RemoteException{
-        int idUsuario = 0;
-        for(Usuario usu : usuarios){
-            if(usu.getNome().equals(usuario.getNome()) & usu.getContato().equals(usuario.getContato())){
-                idUsuario = usu.getId();
-                break;
+    public int registrarInteresse(Carona carona, byte[] assinatura) throws RemoteException{
+
+        Usuario usuario = new Usuario();
+        if(usuarios.size() > 0){
+            for(Usuario usu : usuarios){
+                if(usu.getNome().equals(carona.getNome())){
+                    usuario = usu;
+                    break;
+                }
             }
-        }
-        if(idUsuario == 0)
+        }else
             return 0;
-        
+
+        if(Objects.isNull(usuario.getNome()))
+            return 0;
+
+        // validando a assinatura digital
+        try{
+        	String msg = carona.getNome() + " " + carona.getOrigem() + " " + carona.getDestino() + " " + carona.getData();
+			Signature caronaSig = Signature.getInstance("DSA");
+			caronaSig.initVerify(usuario.getchavePublica());
+			caronaSig.update(msg.getBytes());
+			
+			if(!caronaSig.verify(assinatura))
+				return 0;
+		}catch(NoSuchAlgorithmException | InvalidKeyException | SignatureException e){
+			e.printStackTrace();
+            return 0;
+		}
+
         Carona nova_carona = new Carona();
         nova_carona.setId(idCarona);
+        nova_carona.setNome(carona.getNome());
         nova_carona.setOrigem(carona.getOrigem());
         nova_carona.setDestino(carona.getDestino());
         nova_carona.setData(carona.getData());
         nova_carona.setNumPassageiros(carona.getNumPassageiros());
         nova_carona.setReferenciaCliente(carona.getReferenciaCliente());
         nova_carona.setTipo(carona.getTipo());
-        nova_carona.setIdUsuario(idUsuario);
         boolean registro = caronas.add(nova_carona);
         if(!registro)
             return 0;
 
         idCarona++;
         
-        idUsuario = 0;
         int tipo_busca = 1 - carona.getTipo();
         for(Carona caronaTemp : caronas){
             if(caronaTemp.getOrigem().equals(carona.getOrigem()) & caronaTemp.getDestino().equals(carona.getDestino()) & caronaTemp.getData().equals(carona.getData()) & caronaTemp.getTipo() == tipo_busca){
-                caronaTemp.getReferenciaCliente().notificar(usuario.getNome(), usuario.getContato(), carona.getTipo()); //notifica quem já havia registrado interesse
-                idUsuario = caronaTemp.getIdUsuario();
+                caronaTemp.getReferenciaCliente().notificar(carona.getNome(), usuario.getContato(), carona.getTipo()); //notifica quem já havia registrado interesse
+                String nome = caronaTemp.getNome();
                 for(Usuario usu : usuarios){
-                    if(usu.getId() == idUsuario)
+                    if(usu.getNome() == nome)
                         carona.getReferenciaCliente().notificar(usu.getNome(), usu.getContato(), caronaTemp.getTipo()); //notifica quem está registrando interesse
                 }
             }

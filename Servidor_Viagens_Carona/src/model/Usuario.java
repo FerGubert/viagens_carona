@@ -3,18 +3,9 @@ import java.security.PublicKey;
 
 public class Usuario implements Serializable{
     
-    private int id;
     private String nome;
 	private String contato;
     private PublicKey chavePublica;
-
-    public int getId() {
-		return id;
-	}
-	
-	public void setId(int id) {
-		this.id = id;
-	}
 
     public String getNome() {
 		return nome;

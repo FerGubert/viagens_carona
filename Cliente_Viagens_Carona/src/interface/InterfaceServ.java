@@ -6,7 +6,7 @@ public interface InterfaceServ extends Remote{
 
     String consultarCaronas(String origem, String destino, String data) throws RemoteException;
 
-    int registrarInteresse(Usuario usuario, Carona carona) throws RemoteException;
+    int registrarInteresse(Carona carona, byte[] assinatura) throws RemoteException;
      
     String cancelarRegistroInteresse(int idRegistro) throws RemoteException;
 }

@@ -3,7 +3,7 @@ import java.io.Serializable;
 public class Carona implements Serializable{
 
     private int id;
-    private int idUsuario;
+	private String nome;
 	private String origem;
     private String destino;
     private String data;
@@ -19,12 +19,12 @@ public class Carona implements Serializable{
 		this.id = id;
 	}
 
-    public int getIdUsuario() {
-		return idUsuario;
+	public String getNome() {
+		return nome;
 	}
 	
-	public void setIdUsuario(int idUsuario) {
-		this.idUsuario = idUsuario;
+	public void setNome(String nome) {
+		this.nome = nome;
 	}
 
     public String getOrigem() {

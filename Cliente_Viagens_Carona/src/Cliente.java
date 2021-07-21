@@ -78,7 +78,8 @@ public class Cliente{
     }
 
     public static int menu(Scanner input){
-        System.out.println("#########################################################");
+        System.out.println("##################################################################################################################");
+    	System.out.println("------------------------- AÇÕES ----------------------- # ---------------------- NOTIFICAÇÕES --------------------");
     	System.out.println("\t\t\t\t\t\t\t#");
     	System.out.println("\tOLA, SEJA BEM VINDO AO TALK TALK CAR\t\t#");
     	System.out.println("\t\t\t\t\t\t\t#");

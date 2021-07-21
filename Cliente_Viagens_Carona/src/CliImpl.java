@@ -22,18 +22,18 @@ public class CliImpl extends UnicastRemoteObject implements InterfaceCli{
             usuario[1] = "PASSAGEIRO";
         }
         
-        System.out.println("#################################################");
-        System.out.println();
-        System.out.println("\tNOTIFICACAO PARA O " + usuario[1]);
-        System.out.println();
-        System.out.println("OLA " + usuario[1] + " SEGUEM OS DADOS DO " + usuario[0] + ":");
-        System.out.println();
-        System.out.println("\tNOME:\t\t " + nome );
-        System.out.println();
-        System.out.println("\tCONTATO:\t " + contato);
-        System.out.println();
-        System.out.println("\t(: tenha uma ótima viagem :)");
-        System.out.println("#################################################");
+        System.out.println("##################################################################################################################");
+    	System.out.println("------------------------- AÇÕES ----------------------- # ---------------------- NOTIFICAÇÕES --------------------");
+    	System.out.println("\t\t\t\t\t\t\t#");
+        System.out.println("\t\t\t\t\t\t\t#\t\tNOTIFICACAO PARA O " + usuario[1]);
+        System.out.println("\t\t\t\t\t\t\t#");
+        System.out.println("\t\t\t\t\t\t\t#\tOLA " + usuario[1] + " SEGUEM OS DADOS DO " + usuario[0] + ":");
+        System.out.println("\t\t\t\t\t\t\t#");
+        System.out.println("\t\t\t\t\t\t\t# NOME:\t\t " + nome );
+        System.out.println("\t\t\t\t\t\t\t#");
+        System.out.println("\t\t\t\t\t\t\t# CONTATO:\t " + contato);
+        System.out.println("\t\t\t\t\t\t\t#");
+        System.out.println("\t\t\t\t\t\t\t#\t\t(: tenha uma ótima viagem :)");
 
     }
 }

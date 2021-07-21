@@ -1,14 +1,11 @@
-## Getting Started
+## Introduction
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+Distributed application with client server architecture simulating a hitchhiking application where interested passengers and drivers can register their trips and receive notifications in case there is a change in any event of their interest
 
 ## Folder Structure
 
-The workspace contains two folders by default, where:
+The workspace contains two applications, where:
 
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
+- `Cliente_Viagens_Carona`: client application where passengers and drivers can register their interests
+- `Servidor_Viagens_Carona`: server application that handles requests and sends notifications
 
-## Dependency Management
-
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).

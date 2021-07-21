@@ -6,11 +6,11 @@ public class Servidor{
 
     public static void main(String args[]) throws RemoteException{
 
-        int portaSN = 1099;
-        Registry referenciaServicoNomes = LocateRegistry.createRegistry(portaSN);
+        int portaSN = 1099;                                                         // porta padrão, poderia ser ocultada
+        Registry referenciaServicoNomes = LocateRegistry.createRegistry(portaSN);   // cria serviço de nomes na porta
 
-        InterfaceServ referenciaServidor = new ServImpl();
-        referenciaServicoNomes.rebind("Carona", referenciaServidor);
+        InterfaceServ referenciaServidor = new ServImpl();                          // referência remota do servidor
+        referenciaServicoNomes.rebind("Carona", referenciaServidor);                // dá nome a aplicação e o servidor dessa aplicação
 
     }
 

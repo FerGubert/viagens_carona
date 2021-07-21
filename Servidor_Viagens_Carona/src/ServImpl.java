@@ -9,9 +9,9 @@ import java.util.Objects;
 
 public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
 
-    private ArrayList<Usuario> usuarios;
-    private ArrayList<Carona> caronas;
-    private int idCarona;
+    private ArrayList<Usuario> usuarios;                // guarda os usuarios
+    private ArrayList<Carona> caronas;                  // guarda as caronas
+    private int idCarona;                               // id da carona adicionada
 
     public ServImpl() throws RemoteException{
         usuarios = new ArrayList<Usuario>();
@@ -49,37 +49,41 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
         return "Existem " + caronasDisponiveis + " caronas disponiveis.";
     }
 
-    public int registrarInteresse(Carona carona, byte[] assinatura) throws RemoteException{
-
+    private static Usuario validacaoUsuarioExistente(Carona carona){
         Usuario usuario = new Usuario();
         if(usuarios.size() > 0){
             for(Usuario usu : usuarios){
                 if(usu.getNome().equals(carona.getNome())){
                     usuario = usu;
-                    break;
+                    return usuario;
                 }
             }
         }else
-            return 0;
+            return null;
+    }
 
-        if(Objects.isNull(usuario.getNome()))
-            return 0;
+    private static String criaMensagem(Carona carona){
+        String msg = carona.getNome() + " " + carona.getOrigem() + " " + carona.getDestino() + " " + carona.getData();
+		return msg;
+    }
 
-        // validando a assinatura digital
+    private static validaAssinatura(byte[] assinatura, String msg){
         try{
-        	String msg = carona.getNome() + " " + carona.getOrigem() + " " + carona.getDestino() + " " + carona.getData();
-			Signature caronaSig = Signature.getInstance("DSA");
+        	Signature caronaSig = Signature.getInstance("DSA");
 			caronaSig.initVerify(usuario.getchavePublica());
 			caronaSig.update(msg.getBytes());
 			
 			if(!caronaSig.verify(assinatura))
 				return 0;
+            else
+                return 1;
 		}catch(NoSuchAlgorithmException | InvalidKeyException | SignatureException e){
 			e.printStackTrace();
             return 0;
 		}
+    }
 
-        Carona novaCarona = new Carona();
+    private static void preencheCarona(Carona novaCarona, Carona carona){
         novaCarona.setId(idCarona);
         novaCarona.setNome(carona.getNome());
         novaCarona.setOrigem(carona.getOrigem());
@@ -88,13 +92,9 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
         novaCarona.setNumPassageiros(carona.getNumPassageiros());
         novaCarona.setReferenciaCliente(carona.getReferenciaCliente());
         novaCarona.setTipo(carona.getTipo());
-        boolean registro = caronas.add(novaCarona);
-        if(!registro)
-            return 0;
+    }
 
-        idCarona++;
-        
-        ArrayList<Carona> caronasNotificadas = new ArrayList<Carona>();
+    private static notificaCientes(Carona carona, ArrayList<Carona> caronasNotificadas, Carona novaCarona){
         int tipo_busca = 1 - carona.getTipo();
         for(Carona caronaTemp : caronas){
             if(caronaTemp.getOrigem().equals(carona.getOrigem()) & caronaTemp.getDestino().equals(carona.getDestino()) & caronaTemp.getData().equals(carona.getData()) & caronaTemp.getTipo() == tipo_busca){
@@ -117,14 +117,111 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
                 caronasNotificadas.add(novaCarona);
             }
         }
+    }
 
+    private static removeCaronasNotificadasCheias(Carona carona, ArrayList<Carona> caronasNotificadas){
         for(Carona caronaNotificada : caronasNotificadas){
             if(caronaNotificada.getTipo() == 0)
                 caronas.remove(caronaNotificada);
             else if(caronaNotificada.getNumPassageiros() == 0)
                 caronas.remove(caronaNotificada);   
         }
+    }
 
+    public int registrarInteresse(Carona carona, byte[] assinatura) throws RemoteException{
+
+
+        Usuario usuario = new Usuario();
+        
+        usuario = validacaoUsuarioExistente(carona);
+/*      if(usuarios.size() > 0){
+            for(Usuario usu : usuarios){
+                if(usu.getNome().equals(carona.getNome())){
+                    usuario = usu;
+                    break;
+                }
+            }
+        }else
+            return 0;
+*/
+
+
+        if(Objects.isNull(usuario.getNome()))
+            return 0;
+
+        // validando a assinatura digital
+       // try{
+            String msg = criaMensagem(carona);
+            if(!validaAssinatura(assinatura, msg))
+                return 0;
+
+/*	        Signature caronaSig = Signature.getInstance("DSA");
+			caronaSig.initVerify(usuario.getchavePublica());
+			caronaSig.update(msg.getBytes());
+			
+			if(!caronaSig.verify(assinatura))
+				return 0;
+		}catch(NoSuchAlgorithmException | InvalidKeyException | SignatureException e){
+			e.printStackTrace();
+            return 0;
+		}
+*/
+
+        Carona novaCarona = new Carona();
+/*      novaCarona.setId(idCarona);
+        novaCarona.setNome(carona.getNome());
+        novaCarona.setOrigem(carona.getOrigem());
+        novaCarona.setDestino(carona.getDestino());
+        novaCarona.setData(carona.getData());
+        novaCarona.setNumPassageiros(carona.getNumPassageiros());
+        novaCarona.setReferenciaCliente(carona.getReferenciaCliente());
+        novaCarona.setTipo(carona.getTipo());
+*/
+
+        preencheCarona(novaCarona, carona);
+
+        boolean registro = caronas.add(novaCarona);
+
+        if(!registro)
+            return 0;
+
+        idCarona++;
+        
+        ArrayList<Carona> caronasNotificadas = new ArrayList<Carona>();
+
+        notificaClientes(carona, caronasNotificadas, novaCarona);
+/*        int tipo_busca = 1 - carona.getTipo();
+        for(Carona caronaTemp : caronas){
+            if(caronaTemp.getOrigem().equals(carona.getOrigem()) & caronaTemp.getDestino().equals(carona.getDestino()) & caronaTemp.getData().equals(carona.getData()) & caronaTemp.getTipo() == tipo_busca){
+                caronaTemp.getReferenciaCliente().notificar(carona.getNome(), usuario.getContato(), carona.getTipo()); //notifica quem já havia registrado interesse
+                String nome = caronaTemp.getNome();
+                for(Usuario usu : usuarios){
+                    if(usu.getNome().equals(nome))
+                        carona.getReferenciaCliente().notificar(usu.getNome(), usu.getContato(), caronaTemp.getTipo()); //notifica quem está registrando interesse    
+                }
+
+                if(caronaTemp.getTipo() == 1)
+                    caronaTemp.setNumPassageiros(caronaTemp.getNumPassageiros() - 1);
+                else{
+                    for(Carona caronaRegistrada : caronas){
+                        if(caronaRegistrada.getId() == novaCarona.getId())
+                            caronaRegistrada.setNumPassageiros(caronaRegistrada.getNumPassageiros() - 1);
+                    }
+                }
+                caronasNotificadas.add(caronaTemp);
+                caronasNotificadas.add(novaCarona);
+            }
+        }
+*/
+
+        removeCaronasNotificadasCheias(carona, caronaNotificadas);
+/*        for(Carona caronaNotificada : caronasNotificadas){
+            if(caronaNotificada.getTipo() == 0)
+                caronas.remove(caronaNotificada);
+            else if(caronaNotificada.getNumPassageiros() == 0)
+                caronas.remove(caronaNotificada);   
+        }
+*/
         return novaCarona.getId();
 
     }

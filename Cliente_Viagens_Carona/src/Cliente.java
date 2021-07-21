@@ -17,12 +17,13 @@ public class Cliente{
 
     public static void main(String args[]) throws RemoteException, NotBoundException, NoSuchAlgorithmException{
 
-        Registry referenciaServicoNomes = LocateRegistry.getRegistry(); // assume localhost e porta default 1099.
-        InterfaceServ referenciaServidor = (InterfaceServ) referenciaServicoNomes.lookup("Carona");
-        CliImpl referenciaCliente = new CliImpl(referenciaServidor);
+        Registry referenciaServicoNomes = LocateRegistry.getRegistry();                                     // assume localhost e porta default 1099.
+        InterfaceServ referenciaServidor = (InterfaceServ) referenciaServicoNomes.lookup("Carona");         // referência Servidor
+        CliImpl referenciaCliente = new CliImpl(referenciaServidor);                                        // referencia remota do cliente
         Usuario usuario = new Usuario();
         Carona carona = new Carona();
 
+        // Gera chaves públicas e privadas
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("DSA");
         SecureRandom secRan = new SecureRandom();
         kpg.initialize(512, secRan);
@@ -36,14 +37,14 @@ public class Cliente{
         while(op != 0){
             op = menu(input);
         
-            if(op == 1){
+            if(op == 1){                     // cadastro usuario
                 pedirDadosUsuario(input, usuario);
                 usuario.setchavePublica(pubKey);
 
                 String retorno = referenciaServidor.cadastrarUsuario(usuario);
                 System.out.println(retorno);
 
-            }else if(op == 2){
+            }else if(op == 2){              // registrar interesse
                 pedirDadosCarona(input, carona);
                 carona.setReferenciaCliente(referenciaCliente);
 
@@ -57,12 +58,12 @@ public class Cliente{
                 else
                     System.out.println("Registro de interesse realizado com sucesso. Caso queira cancelar seu ID e " + retorno + ".");
             
-            }else if(op == 3){
+            }else if(op == 3){              // Consultar caronas
                 pedirDadosConsultaCarona(input, carona);
                 String retorno = referenciaServidor.consultarCaronas(carona.getOrigem(), carona.getDestino(), carona.getData());
                 System.out.println(retorno);
 
-            }else if(op == 4){
+            }else if(op == 4){              // Cancelar caronas
                 pedirDadosCancelamento(input, carona);
                 String retorno = referenciaServidor.cancelarRegistroInteresse(carona.getId(), carona.getNome());
                 System.out.println(retorno);

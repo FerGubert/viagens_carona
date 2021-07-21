@@ -116,6 +116,10 @@ public class Cliente{
     	System.out.println("############### REGISTRO DE INTERESSE ##################");
     	System.out.println("\t\t\t\t\t\t\t#");
 		System.out.println("\t\tDIGITE OS DADOS ABAIXO\t\t\t#");
+        
+        System.out.println("NOME : \t\t\t\t\t\t\t#");
+		carona.setNome(input.next());
+
 		System.out.println("ORIGEM : \t\t\t\t\t\t#");
 		carona.setOrigem(input.next());
 		

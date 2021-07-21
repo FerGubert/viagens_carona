@@ -46,7 +46,7 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
             if(carona.getOrigem().equals(origem) & carona.getDestino().equals(destino) & carona.getData().equals(data) & carona.getTipo() == 1)
                 caronasDisponiveis++;
         }
-        return "Existem " + caronasDisponiveis + " disponiveis.";
+        return "Existem " + caronasDisponiveis + " caronas disponiveis.";
     }
 
     public int registrarInteresse(Carona carona, byte[] assinatura) throws RemoteException{
@@ -79,42 +79,64 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
             return 0;
 		}
 
-        Carona nova_carona = new Carona();
-        nova_carona.setId(idCarona);
-        nova_carona.setNome(carona.getNome());
-        nova_carona.setOrigem(carona.getOrigem());
-        nova_carona.setDestino(carona.getDestino());
-        nova_carona.setData(carona.getData());
-        nova_carona.setNumPassageiros(carona.getNumPassageiros());
-        nova_carona.setReferenciaCliente(carona.getReferenciaCliente());
-        nova_carona.setTipo(carona.getTipo());
-        boolean registro = caronas.add(nova_carona);
+        Carona novaCarona = new Carona();
+        novaCarona.setId(idCarona);
+        novaCarona.setNome(carona.getNome());
+        novaCarona.setOrigem(carona.getOrigem());
+        novaCarona.setDestino(carona.getDestino());
+        novaCarona.setData(carona.getData());
+        novaCarona.setNumPassageiros(carona.getNumPassageiros());
+        novaCarona.setReferenciaCliente(carona.getReferenciaCliente());
+        novaCarona.setTipo(carona.getTipo());
+        boolean registro = caronas.add(novaCarona);
         if(!registro)
             return 0;
 
         idCarona++;
         
+        ArrayList<Carona> caronasNotificadas = new ArrayList<Carona>();
         int tipo_busca = 1 - carona.getTipo();
         for(Carona caronaTemp : caronas){
             if(caronaTemp.getOrigem().equals(carona.getOrigem()) & caronaTemp.getDestino().equals(carona.getDestino()) & caronaTemp.getData().equals(carona.getData()) & caronaTemp.getTipo() == tipo_busca){
                 caronaTemp.getReferenciaCliente().notificar(carona.getNome(), usuario.getContato(), carona.getTipo()); //notifica quem já havia registrado interesse
                 String nome = caronaTemp.getNome();
                 for(Usuario usu : usuarios){
-                    if(usu.getNome() == nome)
-                        carona.getReferenciaCliente().notificar(usu.getNome(), usu.getContato(), caronaTemp.getTipo()); //notifica quem está registrando interesse
+                    if(usu.getNome().equals(nome))
+                        carona.getReferenciaCliente().notificar(usu.getNome(), usu.getContato(), caronaTemp.getTipo()); //notifica quem está registrando interesse    
                 }
+
+                if(caronaTemp.getTipo() == 1)
+                    caronaTemp.setNumPassageiros(caronaTemp.getNumPassageiros() - 1);
+                else{
+                    for(Carona caronaRegistrada : caronas){
+                        if(caronaRegistrada.getId() == novaCarona.getId())
+                            caronaRegistrada.setNumPassageiros(caronaRegistrada.getNumPassageiros() - 1);
+                    }
+                }
+                caronasNotificadas.add(caronaTemp);
+                caronasNotificadas.add(novaCarona);
             }
         }
 
-        return nova_carona.getId();
+        for(Carona caronaNotificada : caronasNotificadas){
+            if(caronaNotificada.getTipo() == 0)
+                caronas.remove(caronaNotificada);
+            else if(caronaNotificada.getNumPassageiros() == 0)
+                caronas.remove(caronaNotificada);   
+        }
+
+        return novaCarona.getId();
 
     }
 
-    public String cancelarRegistroInteresse(int idRegistro) throws RemoteException{
+    public String cancelarRegistroInteresse(int idRegistro, String nome) throws RemoteException{
         for(Carona carona : caronas){
             if(carona.getId() == idRegistro){
-                caronas.remove(carona);
-                return "Cancelamento realizado com sucesso.";
+                if(carona.getNome().equals(nome)){
+                    caronas.remove(carona);
+                    return "Cancelamento realizado com sucesso.";
+                }
+                return "Este registro corresponde a outro usuario e, portanto, nao pode ser cancelado.";
             }
         }
         return "Registro de interesse nao encontrado.";

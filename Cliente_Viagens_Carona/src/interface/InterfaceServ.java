@@ -8,5 +8,5 @@ public interface InterfaceServ extends Remote{
 
     int registrarInteresse(Carona carona, byte[] assinatura) throws RemoteException;
      
-    String cancelarRegistroInteresse(int idRegistro) throws RemoteException;
+    String cancelarRegistroInteresse(int idRegistro, String nome) throws RemoteException;
 }

@@ -21,6 +21,7 @@ public class Cliente{
         InterfaceServ referenciaServidor = (InterfaceServ) referenciaServicoNomes.lookup("Carona");
         CliImpl referenciaCliente = new CliImpl(referenciaServidor);
         Usuario usuario = new Usuario();
+        Carona carona = new Carona();
 
         KeyPairGenerator kpg = KeyPairGenerator.getInstance("DSA");
         SecureRandom secRan = new SecureRandom();
@@ -43,7 +44,6 @@ public class Cliente{
                 System.out.println(retorno);
 
             }else if(op == 2){
-                Carona carona = new Carona();
                 pedirDadosCarona(input, carona);
                 carona.setReferenciaCliente(referenciaCliente);
 
@@ -51,10 +51,21 @@ public class Cliente{
 				assinatura = assinarMensagem(priKey, msg);
 
                 int retorno = referenciaServidor.registrarInteresse(carona, assinatura);
+                System.out.println(retorno);
                 if(retorno == 0)
                     System.out.println("Erro ao registrar interesse.");
                 else
                     System.out.println("Registro de interesse realizado com sucesso. Caso queira cancelar seu ID e " + retorno + ".");
+            
+            }else if(op == 3){
+                pedirDadosConsultaCarona(input, carona);
+                String retorno = referenciaServidor.consultarCaronas(carona.getOrigem(), carona.getDestino(), carona.getData());
+                System.out.println(retorno);
+
+            }else if(op == 4){
+                pedirDadosCancelamento(input, carona);
+                String retorno = referenciaServidor.cancelarRegistroInteresse(carona.getId(), carona.getNome());
+                System.out.println(retorno);
             
             }else if(op != 0)
                 System.out.println("Opcao invalida.");
@@ -81,7 +92,6 @@ public class Cliente{
 		System.out.println("Nome:");
 		usuario.setNome(input.next());
 		
-        input.nextLine();
 		System.out.println("Contato:");
 		usuario.setContato(input.next());
 	}
@@ -109,6 +119,29 @@ public class Cliente{
             System.out.println("Numero de passageiros:");
 		    carona.setNumPassageiros(Integer.parseInt(input.next()));
         }
+	}
+
+    public static void pedirDadosConsultaCarona(Scanner input, Carona carona){
+        System.out.println("CONSULTA DE CARONAS");
+		
+		System.out.println("Origem:");
+		carona.setOrigem(input.next());
+		
+		System.out.println("Destino:");
+		carona.setDestino(input.next());
+
+        System.out.println("Data:");
+		carona.setData(input.next());
+	}
+
+    public static void pedirDadosCancelamento(Scanner input, Carona carona){
+        System.out.println("CANCELAMENTO DE REGISTRO DE INTERESSE");
+		
+		System.out.println("Nome:");
+		carona.setNome(input.next());
+		
+		System.out.println("ID:");
+		carona.setId(Integer.parseInt(input.next()));
 	}
 
     public static String criarMensagem(Carona carona){

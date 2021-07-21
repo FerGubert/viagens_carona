@@ -35,9 +35,9 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
         // cadastra novo usuário
         boolean cadastro = usuarios.add(usuario);
         if(cadastro)
-            return "Cadastro realizado com sucesso.";
+            return "\tCADASTRO REALIZADO COM SUCESSO. :)\t\t#\n";
         else
-            return "Erro ao realizar o cadastro.";
+            return "\tERRO AO REALIZAR O CADASTRO. :(\t\t#\n";
     }
 
     public String consultarCaronas(String origem, String destino, String data) throws RemoteException{

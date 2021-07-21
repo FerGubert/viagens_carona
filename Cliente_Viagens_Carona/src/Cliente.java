@@ -56,8 +56,8 @@ public class Cliente{
                 if(retorno == 0)
                     System.out.println("Erro ao registrar interesse.");
                 else
-                    System.out.println("Registro de interesse realizado com sucesso. Caso queira cancelar seu ID e " + retorno + ".");
-            
+                    System.out.println("\tSEU INTERESSE FOI REALIZADO COM SUCESSO.\t#\n");
+
             }else if(op == 3){              // Consultar caronas
                 pedirDadosConsultaCarona(input, carona);
                 String retorno = referenciaServidor.consultarCaronas(carona.getOrigem(), carona.getDestino(), carona.getData());
@@ -78,46 +78,62 @@ public class Cliente{
     }
 
     public static int menu(Scanner input){
-        System.out.println("MENU\n1 - Quero me cadastrar");
-        System.out.println("2 - Quero registrar interesse");
-        System.out.println("3 - Quero consultar caronas disponiveis");
-        System.out.println("4 - Quero cancelar um registro de interesse");
-        System.out.println("0 - Sair");
+        System.out.println("#########################################################");
+    	System.out.println("\t\t\t\t\t\t\t#");
+    	System.out.println("\tOLA, SEJA BEM VINDO AO TALK TALK CAR\t\t#");
+    	System.out.println("\t\t\t\t\t\t\t#");
+    	System.out.println("\t   ESCOLHA UM DAS OPÇÕES ABAIXO\t\t\t#");
+    	System.out.println("\t\t\t\t\t\t\t#");
+        System.out.println("1 - QUERO ME CADASTRAR\t\t\t\t\t#");
+        System.out.println("2 - QUERO REGISTRAR UM INTERESSE EM UMA CARONA\t\t#");
+        System.out.println("3 - QUERO CONSULTAR CARONAS DISPONIVEIS\t\t\t#");
+        System.out.println("4 - QUERO CANCELAR INTERESSE EM UMA CARONA\t\t#");
+        System.out.println("0 - SAIR\t\t\t\t\t\t#");
+        System.out.println("\t\t\t\t\t\t\t#");
+        System.out.println("\tPOR GENTILEZA, DIGITE UMA DAS OPÇÕES ACIMA\t#");
         int op = input.nextInt();
         return op;
     }
 
     public static void pedirDadosUsuario(Scanner input, Usuario usuario){
-        System.out.println("CADASTRO DE USUARIO");
-		
-		System.out.println("Nome:");
+        System.out.println("\n");
+    	System.out.println("################ CADASTRO DE USUARIO ###################");
+    	System.out.println("\t\t\t\t\t\t\t#");
+		System.out.println("\t\tDIGITE OS DADOS ABAIXO\t\t\t#");
+		System.out.println("NOME : \t\t\t\t\t\t\t#");
 		usuario.setNome(input.next());
 		
-		System.out.println("Contato:");
+        input.nextLine();
+        System.out.println("\t\t\t\t\t\t\t#");
+		System.out.println("CONTATO : \t\t\t\t\t\t#");
 		usuario.setContato(input.next());
+		System.out.println("\t\t\t\t\t\t\t#");
 	}
 
     public static void pedirDadosCarona(Scanner input, Carona carona){
-        System.out.println("REGISTRO DE INTERESSE");
-		
-        System.out.println("Nome:");
-		carona.setNome(input.next());
-
-		System.out.println("Origem:");
+        System.out.println("\n");
+    	System.out.println("############### REGISTRO DE INTERESSE ##################");
+    	System.out.println("\t\t\t\t\t\t\t#");
+		System.out.println("\t\tDIGITE OS DADOS ABAIXO\t\t\t#");
+		System.out.println("ORIGEM : \t\t\t\t\t\t#");
 		carona.setOrigem(input.next());
 		
-		System.out.println("Destino:");
+		System.out.println("\t\t\t\t\t\t\t#");
+		System.out.println("DESTINO : \t\t\t\t\t\t#");
 		carona.setDestino(input.next());
-
-        System.out.println("Data:");
+		
+		System.out.println("\t\t\t\t\t\t\t#");
+		System.out.println("DATA DA VIAGEM : \t\t\t\t\t#");
 		carona.setData(input.next());
 
-        System.out.println("Esta interessado em carona ou passageiro:");
+		System.out.println("\t\t\t\t\t\t\t#");
+        System.out.println("ESTÁ INTERESSADO EM UMA CARONA OU PASSAGEIRO?\t\t#");
         if(input.next().equals("carona"))
 		    carona.setTipo(0);
         else{
             carona.setTipo(1);
-            System.out.println("Numero de passageiros:");
+            System.out.println("\t\t\t\t\t\t\t#");
+            System.out.println("DIGITE O NUMERO DE PASSAGEIROS QUE DESEJA DAR CARONA\t#");
 		    carona.setNumPassageiros(Integer.parseInt(input.next()));
         }
 	}

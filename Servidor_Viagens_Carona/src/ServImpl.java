@@ -49,7 +49,7 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
         return "Existem " + caronasDisponiveis + " caronas disponiveis.";
     }
 
-    private static Usuario validacaoUsuarioExistente(Carona carona){
+    private Usuario validacaoUsuarioExistente(Carona carona){
         Usuario usuario = new Usuario();
         if(usuarios.size() > 0){
             for(Usuario usu : usuarios){
@@ -60,6 +60,8 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
             }
         }else
             return null;
+        
+        return null;
     }
 
     private static String criaMensagem(Carona carona){
@@ -67,23 +69,23 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
 		return msg;
     }
 
-    private static validaAssinatura(byte[] assinatura, String msg){
+    private boolean validaAssinatura(byte[] assinatura, String msg, Usuario usuario){
         try{
         	Signature caronaSig = Signature.getInstance("DSA");
 			caronaSig.initVerify(usuario.getchavePublica());
 			caronaSig.update(msg.getBytes());
 			
 			if(!caronaSig.verify(assinatura))
-				return 0;
+				return false;
             else
-                return 1;
+                return true;
 		}catch(NoSuchAlgorithmException | InvalidKeyException | SignatureException e){
 			e.printStackTrace();
-            return 0;
+            return false;
 		}
     }
 
-    private static void preencheCarona(Carona novaCarona, Carona carona){
+    private static void preencheCarona(Carona novaCarona, Carona carona, int idCarona){
         novaCarona.setId(idCarona);
         novaCarona.setNome(carona.getNome());
         novaCarona.setOrigem(carona.getOrigem());
@@ -94,32 +96,40 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
         novaCarona.setTipo(carona.getTipo());
     }
 
-    private static notificaCientes(Carona carona, ArrayList<Carona> caronasNotificadas, Carona novaCarona){
+    private void notificaClientes(Carona carona, ArrayList<Carona> caronasNotificadas, Carona novaCarona, Usuario usuario){
         int tipo_busca = 1 - carona.getTipo();
-        for(Carona caronaTemp : caronas){
-            if(caronaTemp.getOrigem().equals(carona.getOrigem()) & caronaTemp.getDestino().equals(carona.getDestino()) & caronaTemp.getData().equals(carona.getData()) & caronaTemp.getTipo() == tipo_busca){
-                caronaTemp.getReferenciaCliente().notificar(carona.getNome(), usuario.getContato(), carona.getTipo()); //notifica quem já havia registrado interesse
-                String nome = caronaTemp.getNome();
-                for(Usuario usu : usuarios){
-                    if(usu.getNome().equals(nome))
-                        carona.getReferenciaCliente().notificar(usu.getNome(), usu.getContato(), caronaTemp.getTipo()); //notifica quem está registrando interesse    
-                }
-
-                if(caronaTemp.getTipo() == 1)
-                    caronaTemp.setNumPassageiros(caronaTemp.getNumPassageiros() - 1);
-                else{
-                    for(Carona caronaRegistrada : caronas){
-                        if(caronaRegistrada.getId() == novaCarona.getId())
-                            caronaRegistrada.setNumPassageiros(caronaRegistrada.getNumPassageiros() - 1);
-                    }
-                }
-                caronasNotificadas.add(caronaTemp);
-                caronasNotificadas.add(novaCarona);
-            }
-        }
+        
+        try {
+	        for(Carona caronaTemp : caronas){
+	            if(caronaTemp.getOrigem().equals(carona.getOrigem()) & caronaTemp.getDestino().equals(carona.getDestino()) & caronaTemp.getData().equals(carona.getData()) & caronaTemp.getTipo() == tipo_busca){
+	                
+						caronaTemp.getReferenciaCliente().notificar(carona.getNome(), usuario.getContato(), carona.getTipo());
+					 //notifica quem já havia registrado interesse
+	                String nome = caronaTemp.getNome();
+	                for(Usuario usu : usuarios){
+	                    if(usu.getNome().equals(nome))
+	                        carona.getReferenciaCliente().notificar(usu.getNome(), usu.getContato(), caronaTemp.getTipo()); //notifica quem está registrando interesse    
+	                }
+	
+	                if(caronaTemp.getTipo() == 1)
+	                    caronaTemp.setNumPassageiros(caronaTemp.getNumPassageiros() - 1);
+	                else{
+	                    for(Carona caronaRegistrada : caronas){
+	                        if(caronaRegistrada.getId() == novaCarona.getId())
+	                            caronaRegistrada.setNumPassageiros(caronaRegistrada.getNumPassageiros() - 1);
+	                    }
+	                }
+	                caronasNotificadas.add(caronaTemp);
+	                caronasNotificadas.add(novaCarona);
+	            }
+	        } 
+        } catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
 
-    private static removeCaronasNotificadasCheias(Carona carona, ArrayList<Carona> caronasNotificadas){
+    private void removeCaronasNotificadasCheias(Carona carona, ArrayList<Carona> caronasNotificadas){
         for(Carona caronaNotificada : caronasNotificadas){
             if(caronaNotificada.getTipo() == 0)
                 caronas.remove(caronaNotificada);
@@ -152,7 +162,7 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
         // validando a assinatura digital
        // try{
             String msg = criaMensagem(carona);
-            if(!validaAssinatura(assinatura, msg))
+            if(!validaAssinatura(assinatura, msg, usuario))
                 return 0;
 
 /*	        Signature caronaSig = Signature.getInstance("DSA");
@@ -178,7 +188,7 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
         novaCarona.setTipo(carona.getTipo());
 */
 
-        preencheCarona(novaCarona, carona);
+        preencheCarona(novaCarona, carona, idCarona);
 
         boolean registro = caronas.add(novaCarona);
 
@@ -189,7 +199,7 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
         
         ArrayList<Carona> caronasNotificadas = new ArrayList<Carona>();
 
-        notificaClientes(carona, caronasNotificadas, novaCarona);
+        notificaClientes(carona, caronasNotificadas, novaCarona, usuario);
 /*        int tipo_busca = 1 - carona.getTipo();
         for(Carona caronaTemp : caronas){
             if(caronaTemp.getOrigem().equals(carona.getOrigem()) & caronaTemp.getDestino().equals(carona.getDestino()) & caronaTemp.getData().equals(carona.getData()) & caronaTemp.getTipo() == tipo_busca){
@@ -214,7 +224,7 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
         }
 */
 
-        removeCaronasNotificadasCheias(carona, caronaNotificadas);
+        removeCaronasNotificadasCheias(carona, caronasNotificadas);
 /*        for(Carona caronaNotificada : caronasNotificadas){
             if(caronaNotificada.getTipo() == 0)
                 caronas.remove(caronaNotificada);

@@ -27,7 +27,7 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
                 if(usu.getNome().equals(usuario.getNome())){
                     usu.setContato(usuario.getContato());
                     usu.setchavePublica(usuario.getchavePublica());
-                    return "Usuario atualizado pois ja estava cadastrado.";
+                    return "USUARIO ATUALIZADO POIS JA ESTAVA CADASTRADO.";
                 }
             }
         }
@@ -46,10 +46,11 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
             if(carona.getOrigem().equals(origem) & carona.getDestino().equals(destino) & carona.getData().equals(data) & carona.getTipo() == 1)
                 caronasDisponiveis++;
         }
-        return "Existem " + caronasDisponiveis + " caronas disponiveis.";
+        return "EXISTEM " + caronasDisponiveis + " CARONAS DISPONIVEIS.";
     }
 
     private Usuario validacaoUsuarioExistente(Carona carona){
+        // valida se o usuario possui cadastro
         Usuario usuario = new Usuario();
         if(usuarios.size() > 0){
             for(Usuario usu : usuarios){
@@ -65,6 +66,7 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
     }
 
     private static String criaMensagem(Carona carona){
+        // cria mensagem para validar a assinatura digital
         String msg = carona.getNome() + " " + carona.getOrigem() + " " + carona.getDestino() + " " + carona.getData();
 		return msg;
     }
@@ -86,6 +88,7 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
     }
 
     private static void preencheCarona(Carona novaCarona, Carona carona, int idCarona){
+        // seta os valores da nova carona
         novaCarona.setId(idCarona);
         novaCarona.setNome(carona.getNome());
         novaCarona.setOrigem(carona.getOrigem());
@@ -99,32 +102,34 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
     private void notificaClientes(Carona carona, ArrayList<Carona> caronasNotificadas, Carona novaCarona, Usuario usuario){
         int tipo_busca = 1 - carona.getTipo();
         
-        try {
-	        for(Carona caronaTemp : caronas){
+        try{
+	        for(Carona caronaTemp : caronas){ // percorre as viagens cadastradas
+                // verifica se existem viagens que coincidem
 	            if(caronaTemp.getOrigem().equals(carona.getOrigem()) & caronaTemp.getDestino().equals(carona.getDestino()) & caronaTemp.getData().equals(carona.getData()) & caronaTemp.getTipo() == tipo_busca){
 	                
-						caronaTemp.getReferenciaCliente().notificar(carona.getNome(), usuario.getContato(), carona.getTipo());
-					 //notifica quem já havia registrado interesse
+					caronaTemp.getReferenciaCliente().notificar(carona.getNome(), usuario.getContato(), carona.getTipo());
+					//notifica quem já havia registrado interesse
 	                String nome = caronaTemp.getNome();
 	                for(Usuario usu : usuarios){
-	                    if(usu.getNome().equals(nome))
-	                        carona.getReferenciaCliente().notificar(usu.getNome(), usu.getContato(), caronaTemp.getTipo()); //notifica quem está registrando interesse    
+	                    if(usu.getNome().equals(nome)) //notifica quem está registrando interesse
+	                        carona.getReferenciaCliente().notificar(usu.getNome(), usu.getContato(), caronaTemp.getTipo());    
 	                }
 	
-	                if(caronaTemp.getTipo() == 1)
+                    // diminuiu número de passageiros
+	                if(caronaTemp.getTipo() == 1) // se for motorista
 	                    caronaTemp.setNumPassageiros(caronaTemp.getNumPassageiros() - 1);
-	                else{
+	                else{ // se for passageiro então a carona novo que é motorista
 	                    for(Carona caronaRegistrada : caronas){
 	                        if(caronaRegistrada.getId() == novaCarona.getId())
 	                            caronaRegistrada.setNumPassageiros(caronaRegistrada.getNumPassageiros() - 1);
 	                    }
 	                }
+                    // adiciona as caronas que foram notificadas a seus usuários
 	                caronasNotificadas.add(caronaTemp);
 	                caronasNotificadas.add(novaCarona);
 	            }
 	        } 
-        } catch (RemoteException e) {
-			// TODO Auto-generated catch block
+        }catch (RemoteException e) {
 			e.printStackTrace();
 		}
     }
@@ -140,98 +145,29 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
 
     public int registrarInteresse(Carona carona, byte[] assinatura) throws RemoteException{
 
-
         Usuario usuario = new Usuario();
-        
         usuario = validacaoUsuarioExistente(carona);
-/*      if(usuarios.size() > 0){
-            for(Usuario usu : usuarios){
-                if(usu.getNome().equals(carona.getNome())){
-                    usuario = usu;
-                    break;
-                }
-            }
-        }else
-            return 0;
-*/
-
 
         if(Objects.isNull(usuario.getNome()))
             return 0;
 
-        // validando a assinatura digital
-       // try{
-            String msg = criaMensagem(carona);
-            if(!validaAssinatura(assinatura, msg, usuario))
-                return 0;
-
-/*	        Signature caronaSig = Signature.getInstance("DSA");
-			caronaSig.initVerify(usuario.getchavePublica());
-			caronaSig.update(msg.getBytes());
-			
-			if(!caronaSig.verify(assinatura))
-				return 0;
-		}catch(NoSuchAlgorithmException | InvalidKeyException | SignatureException e){
-			e.printStackTrace();
+        String msg = criaMensagem(carona);
+        if(!validaAssinatura(assinatura, msg, usuario))
             return 0;
-		}
-*/
 
         Carona novaCarona = new Carona();
-/*      novaCarona.setId(idCarona);
-        novaCarona.setNome(carona.getNome());
-        novaCarona.setOrigem(carona.getOrigem());
-        novaCarona.setDestino(carona.getDestino());
-        novaCarona.setData(carona.getData());
-        novaCarona.setNumPassageiros(carona.getNumPassageiros());
-        novaCarona.setReferenciaCliente(carona.getReferenciaCliente());
-        novaCarona.setTipo(carona.getTipo());
-*/
-
         preencheCarona(novaCarona, carona, idCarona);
 
         boolean registro = caronas.add(novaCarona);
-
         if(!registro)
             return 0;
 
         idCarona++;
         
         ArrayList<Carona> caronasNotificadas = new ArrayList<Carona>();
-
         notificaClientes(carona, caronasNotificadas, novaCarona, usuario);
-/*        int tipo_busca = 1 - carona.getTipo();
-        for(Carona caronaTemp : caronas){
-            if(caronaTemp.getOrigem().equals(carona.getOrigem()) & caronaTemp.getDestino().equals(carona.getDestino()) & caronaTemp.getData().equals(carona.getData()) & caronaTemp.getTipo() == tipo_busca){
-                caronaTemp.getReferenciaCliente().notificar(carona.getNome(), usuario.getContato(), carona.getTipo()); //notifica quem já havia registrado interesse
-                String nome = caronaTemp.getNome();
-                for(Usuario usu : usuarios){
-                    if(usu.getNome().equals(nome))
-                        carona.getReferenciaCliente().notificar(usu.getNome(), usu.getContato(), caronaTemp.getTipo()); //notifica quem está registrando interesse    
-                }
-
-                if(caronaTemp.getTipo() == 1)
-                    caronaTemp.setNumPassageiros(caronaTemp.getNumPassageiros() - 1);
-                else{
-                    for(Carona caronaRegistrada : caronas){
-                        if(caronaRegistrada.getId() == novaCarona.getId())
-                            caronaRegistrada.setNumPassageiros(caronaRegistrada.getNumPassageiros() - 1);
-                    }
-                }
-                caronasNotificadas.add(caronaTemp);
-                caronasNotificadas.add(novaCarona);
-            }
-        }
-*/
-
         removeCaronasNotificadasCheias(carona, caronasNotificadas);
-/*        for(Carona caronaNotificada : caronasNotificadas){
-            if(caronaNotificada.getTipo() == 0)
-                caronas.remove(caronaNotificada);
-            else if(caronaNotificada.getNumPassageiros() == 0)
-                caronas.remove(caronaNotificada);   
-        }
-*/
+
         return novaCarona.getId();
 
     }
@@ -241,12 +177,12 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
             if(carona.getId() == idRegistro){
                 if(carona.getNome().equals(nome)){
                     caronas.remove(carona);
-                    return "Cancelamento realizado com sucesso.";
+                    return "CANCELAMENTO REALIZADO COM SUCESSO.";
                 }
-                return "Este registro corresponde a outro usuario e, portanto, nao pode ser cancelado.";
+                return "ESTE REGISTRO CORRESPONDE A OUTRO USUARIO E, PORTANTO, NÃO PODE SER CANCELADO.";
             }
         }
-        return "Registro de interesse nao encontrado.";
+        return "REGISTRO DE INTERESSE NÃO ENCONTRADO.";
     }
 
 }

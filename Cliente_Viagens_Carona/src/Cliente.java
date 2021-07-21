@@ -54,9 +54,9 @@ public class Cliente{
                 int retorno = referenciaServidor.registrarInteresse(carona, assinatura);
                 System.out.println(retorno);
                 if(retorno == 0)
-                    System.out.println("Erro ao registrar interesse.");
+                    System.out.println("ERRO AO REGISTRAR INTERESSE.");
                 else
-                    System.out.println("\tSEU INTERESSE FOI REALIZADO COM SUCESSO.\t#\n");
+                    System.out.println("\tSEU INTERESSE FOI REALIZADO COM SUCESSO.\n\tSE QUISER CANCELAR SEU ID É " + retorno + ".");
 
             }else if(op == 3){              // Consultar caronas
                 pedirDadosConsultaCarona(input, carona);
@@ -69,7 +69,7 @@ public class Cliente{
                 System.out.println(retorno);
             
             }else if(op != 0)
-                System.out.println("Opcao invalida.");
+                System.out.println("OPÇÃO INVÁLIDA.");
 
         }
         input.close();
@@ -82,8 +82,6 @@ public class Cliente{
     	System.out.println("------------------------- AÇÕES ----------------------- # ---------------------- NOTIFICAÇÕES --------------------");
     	System.out.println("\t\t\t\t\t\t\t#");
     	System.out.println("\tOLA, SEJA BEM VINDO AO TALK TALK CAR\t\t#");
-    	System.out.println("\t\t\t\t\t\t\t#");
-    	System.out.println("\t   ESCOLHA UM DAS OPÇÕES ABAIXO\t\t\t#");
     	System.out.println("\t\t\t\t\t\t\t#");
         System.out.println("1 - QUERO ME CADASTRAR\t\t\t\t\t#");
         System.out.println("2 - QUERO REGISTRAR UM INTERESSE EM UMA CARONA\t\t#");
@@ -120,6 +118,7 @@ public class Cliente{
         System.out.println("NOME : \t\t\t\t\t\t\t#");
 		carona.setNome(input.next());
 
+        System.out.println("\t\t\t\t\t\t\t#");
 		System.out.println("ORIGEM : \t\t\t\t\t\t#");
 		carona.setOrigem(input.next());
 		

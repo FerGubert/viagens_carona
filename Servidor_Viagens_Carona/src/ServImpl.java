@@ -77,10 +77,10 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
 			caronaSig.initVerify(usuario.getchavePublica());
 			caronaSig.update(msg.getBytes());
 			
-			if(!caronaSig.verify(assinatura))
-				return false;
+			if(caronaSig.verify(assinatura))
+				return true;
             else
-                return true;
+                return false;
 		}catch(NoSuchAlgorithmException | InvalidKeyException | SignatureException e){
 			e.printStackTrace();
             return false;
@@ -127,6 +127,7 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
                     // adiciona as caronas que foram notificadas a seus usuários
 	                caronasNotificadas.add(caronaTemp);
 	                caronasNotificadas.add(novaCarona);
+                    break;
 	            }
 	        } 
         }catch (RemoteException e) {
@@ -179,7 +180,7 @@ public class ServImpl extends UnicastRemoteObject implements InterfaceServ{
                     caronas.remove(carona);
                     return "CANCELAMENTO REALIZADO COM SUCESSO.";
                 }
-                return "ESTE REGISTRO CORRESPONDE A OUTRO USUARIO E, PORTANTO, NÃO PODE SER CANCELADO.";
+                return "ESTE REGISTRO CORRESPONDE A OUTRO USUARIO E, PORTANTO,\nNÃO PODE SER CANCELADO.";
             }
         }
         return "REGISTRO DE INTERESSE NÃO ENCONTRADO.";

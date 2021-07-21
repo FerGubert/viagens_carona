@@ -54,7 +54,7 @@ public class Cliente{
                 int retorno = referenciaServidor.registrarInteresse(carona, assinatura);
                 System.out.println(retorno);
                 if(retorno == 0)
-                    System.out.println("ERRO AO REGISTRAR INTERESSE.");
+                    System.out.println("\tERRO AO REGISTRAR INTERESSE.");
                 else
                     System.out.println("\tSEU INTERESSE FOI REALIZADO COM SUCESSO.\n\tSE QUISER CANCELAR SEU ID É " + retorno + ".");
 
@@ -69,7 +69,7 @@ public class Cliente{
                 System.out.println(retorno);
             
             }else if(op != 0)
-                System.out.println("OPÇÃO INVÁLIDA.");
+                System.out.println("\tOPÇÃO INVÁLIDA.");
 
         }
         input.close();
@@ -143,25 +143,35 @@ public class Cliente{
 	}
 
     public static void pedirDadosConsultaCarona(Scanner input, Carona carona){
-        System.out.println("CONSULTA DE CARONAS");
+        System.out.println("\n");
+    	System.out.println("################ CONSULTA DE CARONAS ###################");
+    	System.out.println("\t\t\t\t\t\t\t#");
+		System.out.println("\t\tDIGITE OS DADOS ABAIXO\t\t\t#");
 		
-		System.out.println("Origem:");
+		System.out.println("ORIGEM : \t\t\t\t\t\t#");
 		carona.setOrigem(input.next());
 		
-		System.out.println("Destino:");
+		System.out.println("\t\t\t\t\t\t\t#");
+		System.out.println("DESTINO : \t\t\t\t\t\t#");
 		carona.setDestino(input.next());
 
-        System.out.println("Data:");
+        System.out.println("\t\t\t\t\t\t\t#");
+		System.out.println("DATA DA VIAGEM : \t\t\t\t\t#");
 		carona.setData(input.next());
+        System.out.println("\t\t\t\t\t\t\t#");
 	}
 
     public static void pedirDadosCancelamento(Scanner input, Carona carona){
-        System.out.println("CANCELAMENTO DE REGISTRO DE INTERESSE");
+        System.out.println("\n");
+    	System.out.println("######## CANCELAMENTO DE REGISTRO DE INTERESSE ##########");
+    	System.out.println("\t\t\t\t\t\t\t#");
+		System.out.println("\t\tDIGITE OS DADOS ABAIXO\t\t\t#");
 		
-		System.out.println("Nome:");
+		System.out.println("NOME : \t\t\t\t\t\t\t#");
 		carona.setNome(input.next());
-		
-		System.out.println("ID:");
+
+        System.out.println("\t\t\t\t\t\t\t#");
+        System.out.println("ID : \t\t\t\t\t\t\t#");
 		carona.setId(Integer.parseInt(input.next()));
 	}
 
